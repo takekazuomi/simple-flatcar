@@ -15,7 +15,7 @@ param dnsLabelPrefix string = toLower('simpleflatcar-${uniqueString(resourceGrou
 param location string = resourceGroup().location
 
 @description('The size of the VM')
-param VmSize string = 'Standard_B1s'
+param vmSize string = 'Standard_B1s'
 
 @description('Name of the VNET')
 param virtualNetworkName string = 'vnet'
@@ -32,9 +32,12 @@ param customData string
 @description('ssh access source ip address prefix.')
 param sourceAddressPrefix string = '*'
 
+@description('vmss or vm flag.')
+param isVmss bool = false
+
 var laName = '${replace(resourceGroup().name, '-rg','')}-log-analytics-workspace'
 
-module vm '../vm/main.bicep' = {
+module vm '../vm/main.bicep' = if(isVmss) {
   name: 'vm'
   params: {
     vmName: vmName
@@ -42,12 +45,27 @@ module vm '../vm/main.bicep' = {
     adminSshKey: adminSshKey
     dnsLabelPrefix: dnsLabelPrefix
     location: location
-    VmSize: VmSize
+    vmSize: vmSize
     virtualNetworkName: virtualNetworkName
     subnetName: subnetName
     networkSecurityGroupName: networkSecurityGroupName
     customData: customData
     sourceAddressPrefix: sourceAddressPrefix
+  }
+}
+
+module vmss '../vmss/main.bicep' = if(isVmss) {
+  name: 'vmss'
+  params: {
+    vmssName: vmName
+    adminUsername: adminUsername
+    adminSshKey: adminSshKey
+    location: location
+    vmSku: vmSize
+    customData: customData
+    sourceAddressPrefix: sourceAddressPrefix
+    instanceCount:1
+    publicIPPrefixLength:31
   }
 }
 
@@ -84,8 +102,8 @@ resource sln 'Microsoft.OperationsManagement/solutions@2015-11-01-preview' = {
 }
 
 output adminUsername string = vm.outputs.adminUsername
-output hostname string = vm.outputs.hostname
-output sshCommand string = vm.outputs.sshCommand
+output hostname string = isVmss ? vm.outputs.hostName : ''
+output sshCommand string = isVmss ? vm.outputs.sshCommand : vmss.outputs.sshCommand
 output workspaceName string = la.name
 output workspaceId string = la.properties.customerId
 output workspaceKey string = listKeys(la.id, la.apiVersion).primarySharedKey

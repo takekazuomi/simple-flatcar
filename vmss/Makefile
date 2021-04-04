@@ -1,4 +1,4 @@
-RESOURCE_GROUP	?= takekazuomi-rg
+RESOURCE_GROUP	?= omi-vmss-rg
 LOCATION	?= eastus2
 
 BICEP		:= bicep
@@ -8,7 +8,7 @@ LOG_DATE	:= $(shell date +'%d%H%M%S')
 LOG_FILE	?= "logs/logs-"$(LOG_DATE).log
 SSH_KEY_FILE	:= .secure/vm-keys
 MY_IP_ADDRESS	:= $(shell curl -s 'https://api.ipify.org')
-OPTIONS		= "-p adminSshKey=\"$$(cat $(SSH_KEY_FILE).pub)\" customData=\"$$(cat config.ign | base64 -w0)\" sourceAddressPrefix=\"$(MY_IP_ADDRESS)\""
+OPTIONS		= "-p adminSshKey=\"$$(cat $(SSH_KEY_FILE).pub)\" customData=\"$$(cat config.ign | base64 -w0)\" sourceAddressPrefix=\"$(MY_IP_ADDRESS)\" hasPublicIp=false"
 
 CT		= docker run --rm -i quay.io/coreos/ct:latest-dev --platform=azure
 
@@ -50,14 +50,14 @@ az-account:
 .PHONY: setup
 setup: $(SSH_KEY_FILE) config.ign
 
-create-rg:	## create resource group
-	$(AZ) group create -l $(LOCATION) -g $(RESOURCE_GROUP)
-
 clean:
 	az group delete -g $(RESOURCE_GROUP)
 
 config.ign: config.yml
 	cat $< | $(CT) > $@
+
+create-rg:	## create resource group
+	$(AZ) group create -l $(LOCATION) -g $(RESOURCE_GROUP)
 
 deploy:		## Deploy all
 deploy: main.deploy

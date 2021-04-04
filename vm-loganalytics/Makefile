@@ -1,4 +1,5 @@
 RESOURCE_GROUP	?= takekazuomi-rg
+LOCATION	?= eastus2
 
 BICEP		:= bicep
 AZ		:= az
@@ -48,6 +49,9 @@ az-account:
 
 .PHONY: setup
 setup: $(SSH_KEY_FILE) config.ign
+
+create-rg:	## create resource group
+	$(AZ) group create -l $(LOCATION) -g $(RESOURCE_GROUP)
 
 clean:
 	az group delete -g $(RESOURCE_GROUP)
