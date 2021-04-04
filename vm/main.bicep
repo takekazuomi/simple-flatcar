@@ -90,7 +90,7 @@ resource nsg 'Microsoft.Network/networkSecurityGroups@2020-06-01' = {
           protocol: 'Tcp'
           access: 'Allow'
           direction: 'Inbound'
-          sourceAddressPrefix: '*' // TODO: my ip
+          sourceAddressPrefix: sourceAddressPrefix
           sourcePortRange: '*'
           destinationAddressPrefix: '*'
           destinationPortRange: '22'
