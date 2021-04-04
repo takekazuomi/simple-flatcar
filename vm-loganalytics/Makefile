@@ -27,14 +27,13 @@ help:           ## Show this help.
 	@$(BICEP) build $<
 
 az-deploy: setup
-	$(AZ) deployment group $(CMD) -g $(RESOURCE_GROUP) -n $(DEPLOY_NAME) \
-		-f $(SOURCE) $(AZ_OPTIONS) 2>&1
+	($(AZ) deployment group $(CMD) -g $(RESOURCE_GROUP) -n $(DEPLOY_NAME) \
+		-f $(SOURCE) $(AZ_OPTIONS) --query properties.outputs -o json | tee ./.secure/deploy-results.json) 2>&1
 
 $(SSH_KEY_FILE):
 	@mkdir -p .secure
 	@chmod 0700 .secure
-	@echo -e 'y' | ssh-keygen -f $(SSH_KEY_FILE) -N ""
-	# > /dev/null
+	@echo -e 'y' | ssh-keygen -f $(SSH_KEY_FILE) -N "" > /dev/null
 
 az-account:
 	$(AZ) account list

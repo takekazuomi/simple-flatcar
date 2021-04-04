@@ -24,5 +24,5 @@ systemd:
 # https://kinvolk.io/docs/flatcar-container-linux/latest/setup/releases/update-strategies/#auto-updates-with-a-maintenance-window
 locksmith:
   reboot_strategy: reboot
-  window_start: Thu 04:00
+  window_start: Sun 04:00
   window_length: 1h

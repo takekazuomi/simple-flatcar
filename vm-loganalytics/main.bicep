@@ -68,8 +68,6 @@ resource la 'microsoft.operationalinsights/workspaces@2020-10-01' = {
 }
 
 var slnName = 'Containers(${la.name})'
-// param workspaces_log_analytics_workspace01_externalid string =
-// '/subscriptions/eb366cce-61a4-447f-b5d0-cf4a7a262b37/resourceGroups/takekazuomi01-rg/providers/Microsoft.OperationalInsights/workspaces/log-analytics-workspace01'
 
 resource sln 'Microsoft.OperationsManagement/solutions@2015-11-01-preview' = {
   name: slnName
@@ -78,15 +76,16 @@ resource sln 'Microsoft.OperationsManagement/solutions@2015-11-01-preview' = {
     name: slnName
     product: 'OMSGallery/Containers'
     publisher: 'Microsoft'
+    promotionCode: ''
   }
   properties: {
     workspaceResourceId: la.id
-    containedResources: [
-      '${la.id}/views/${slnName}'
-    ]
   }
 }
 
 output adminUsername string = vm.outputs.adminUsername
 output hostname string = vm.outputs.hostname
 output sshCommand string = vm.outputs.sshCommand
+output workspaceName string = la.name
+output workspaceId string = la.properties.customerId
+output workspaceKey string = listKeys(la.id, la.apiVersion).primarySharedKey
