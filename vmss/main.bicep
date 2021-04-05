@@ -272,4 +272,4 @@ output adminUsername string = adminUsername
 output sshCommand string = 'ssh ${adminUsername}@${pip.properties.ipAddress}'
 output vmss object = vmss
 output pipPrefix object = hasPublicIp ? pipPrefix : {}
-output ipAddresses array = hasPublicIp ? pipPrefix.properties.publicIPAddresses : []
+output ipPrefix string = hasPublicIp ? pipPrefix.properties.ipPrefix : ''

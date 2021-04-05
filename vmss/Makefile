@@ -8,7 +8,7 @@ LOG_DATE	:= $(shell date +'%d%H%M%S')
 LOG_FILE	?= "logs/logs-"$(LOG_DATE).log
 SSH_KEY_FILE	:= .secure/vm-keys
 MY_IP_ADDRESS	:= $(shell curl -s 'https://api.ipify.org')
-OPTIONS		= "-p adminSshKey=\"$$(cat $(SSH_KEY_FILE).pub)\" customData=\"$$(cat config.ign | base64 -w0)\" sourceAddressPrefix=\"$(MY_IP_ADDRESS)\" hasPublicIp=false"
+OPTIONS		= "-p adminSshKey=\"$$(cat $(SSH_KEY_FILE).pub)\" customData=\"$$(cat config.ign | base64 -w0)\" sourceAddressPrefix=\"$(MY_IP_ADDRESS)\" hasPublicIp=true instanceCount=3 publicIPPrefixLength=30"
 
 CT		= docker run --rm -i quay.io/coreos/ct:latest-dev --platform=azure
 
@@ -36,6 +36,9 @@ $(SSH_KEY_FILE):
 	@chmod 0700 .secure
 	@echo -e 'y' | ssh-keygen -f $(SSH_KEY_FILE) -N "" > /dev/null
 
+config.yml:
+	@cat config.tmpl.yml | sed -e 's%{DISCOVERY_PLACEHOLDER}%'"$$(curl -s 'https://discovery.etcd.io/new?size=3')"'%' > config.yml
+
 az-account:
 	$(AZ) account list
 
@@ -48,10 +51,12 @@ az-account:
 	#@grep -q Nochange $(LOG_FILE)
 
 .PHONY: setup
-setup: $(SSH_KEY_FILE) config.ign
+setup: $(SSH_KEY_FILE) config.yml config.ign
 
 clean:
+	-@rm config.yml
 	az group delete -g $(RESOURCE_GROUP)
+
 
 config.ign: config.yml
 	cat $< | $(CT) > $@
