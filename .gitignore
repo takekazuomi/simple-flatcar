@@ -435,3 +435,5 @@ $RECYCLE.BIN/
 tmp/
 .secure/
 config.ign
+config.yml
+

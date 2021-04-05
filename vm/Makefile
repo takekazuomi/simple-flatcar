@@ -1,4 +1,5 @@
 RESOURCE_GROUP	?= takekazuomi-rg
+LOCATION	?= eastus2
 
 BICEP		:= bicep
 AZ		:= az
@@ -33,8 +34,7 @@ az-deploy: setup
 $(SSH_KEY_FILE):
 	@mkdir -p .secure
 	@chmod 0700 .secure
-	@echo -e 'y' | ssh-keygen -f $(SSH_KEY_FILE) -N ""
-	# > /dev/null
+	@echo -e 'y' | ssh-keygen -f $(SSH_KEY_FILE) -N "" > /dev/null
 
 az-account:
 	$(AZ) account list
@@ -49,6 +49,9 @@ az-account:
 
 .PHONY: setup
 setup: $(SSH_KEY_FILE) config.ign
+
+create-rg:	## create resource group
+	$(AZ) group create -l $(LOCATION) -g $(RESOURCE_GROUP)
 
 clean:
 	az group delete -g $(RESOURCE_GROUP)

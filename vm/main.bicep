@@ -15,7 +15,7 @@ param dnsLabelPrefix string = toLower('simpleflatcar-${uniqueString(resourceGrou
 param location string = resourceGroup().location
 
 @description('The size of the VM')
-param VmSize string = 'Standard_B1s'
+param vmSize string = 'Standard_B1s'
 
 @description('Name of the VNET')
 param virtualNetworkName string = 'vnet'
@@ -90,7 +90,7 @@ resource nsg 'Microsoft.Network/networkSecurityGroups@2020-06-01' = {
           protocol: 'Tcp'
           access: 'Allow'
           direction: 'Inbound'
-          sourceAddressPrefix: '*' // TODO: my ip
+          sourceAddressPrefix: sourceAddressPrefix
           sourcePortRange: '*'
           destinationAddressPrefix: '*'
           destinationPortRange: '22'
@@ -149,7 +149,7 @@ resource vm 'Microsoft.Compute/virtualMachines@2020-06-01' = {
   }
   properties: {
     hardwareProfile: {
-      vmSize: VmSize
+      vmSize: vmSize
     }
     storageProfile: {
       osDisk: {
@@ -187,5 +187,6 @@ resource vm 'Microsoft.Compute/virtualMachines@2020-06-01' = {
 }
 
 output adminUsername string = adminUsername
-output hostname string = reference(publicIpAddressName).dnsSettings.fqdn
-output sshCommand string = 'ssh ${adminUsername}@${reference(publicIpAddressName).dnsSettings.fqdn}'
+output hostName string = pip.properties.dnsSettings.fqdn
+output hostIP string = pip.properties.ipAddress
+output sshCommand string = 'ssh ${adminUsername}@${pip.properties.ipAddress}'
